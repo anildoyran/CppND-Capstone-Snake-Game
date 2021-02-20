@@ -31,14 +31,47 @@ Renderer::Renderer(const std::size_t screen_width,
     std::cerr << "Renderer could not be created.\n";
     std::cerr << "SDL_Error: " << SDL_GetError() << "\n";
   }
+
+  // Initialize surface for loading image
+  surface = nullptr;
+  pauseImage = nullptr;
 }
 
 Renderer::~Renderer() {
+  // Free the surfaces
+  SDL_FreeSurface(pauseImage);
+  SDL_FreeSurface(surface);
+
   SDL_DestroyWindow(sdl_window);
   SDL_Quit();
 }
 
-void Renderer::Render(Snake const snake, SDL_Point const &food) {
+void Renderer::Render(Snake const snake, SDL_Point const &food, bool &pause) {
+
+  // Pause screen
+  if(pause)
+  {
+    SDL_Rect rect;
+    surface = SDL_GetWindowSurface(sdl_window);
+    pauseImage = SDL_LoadBMP("../image/pause.bmp");
+
+    // Locate the pause image at the center
+    rect.x = (screen_width - pauseImage->w) / 2;
+    rect.y = (screen_height - pauseImage->h) / 2;    
+
+    if(nullptr == pauseImage)
+    {
+      std::cout << "SDL could not load the image! SDL Error: " << SDL_GetError() << std::endl;
+    }
+    else
+    {
+      SDL_BlitSurface (pauseImage, NULL, surface, &rect);
+      SDL_UpdateWindowSurface(sdl_window);
+    }
+
+    return;
+  }
+
   SDL_Rect block;
   block.w = screen_width / grid_width;
   block.h = screen_height / grid_height;
@@ -75,7 +108,7 @@ void Renderer::Render(Snake const snake, SDL_Point const &food) {
   SDL_RenderPresent(sdl_renderer);
 }
 
-void Renderer::UpdateWindowTitle(int score, int fps) {
-  std::string title{"Snake Score: " + std::to_string(score) + " FPS: " + std::to_string(fps)};
+void Renderer::UpdateWindowTitle(int score, int fps, int time) {
+  std::string title{"Snake Score: " + std::to_string(score) + " FPS: " + std::to_string(fps) + " Time: " + std::to_string(time)};
   SDL_SetWindowTitle(sdl_window, title.c_str());
 }
