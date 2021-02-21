@@ -2,13 +2,24 @@
 
 int Obstacle::obsCount = 0;
 
-Obstacle::Obstacle(int _x, int _y, int _width, int _height)
+Obstacle::Obstacle(int _x, int _y, int _width, int _height) : x(_x), y(_y), width(_width), height(_height)
 {
-    this->x = _x;
-    this->y = _y;
-    this->width = _width;
-    this->height = _height;
     obsCount++;
+}
+
+bool Obstacle::obstacleCell(int _x, int _y)
+{
+    for (int i = 0; i < width; i++)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            if ((x + i == _x) && (y + j == _y))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 int Obstacle::getxPos()

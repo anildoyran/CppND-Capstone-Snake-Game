@@ -7,6 +7,13 @@
 #include "renderer.h"
 #include "snake.h"
 #include "obstacle.h"
+#include <fstream>
+#include <iostream>
+
+// Defined macros
+#define DEFAULT_OBSTACLE_LENGTH 10
+#define DEFAULT_OBSTACLE_THICKNESS 1
+#define DEFAULT_OBSTACLE_OFFSET 10
 
 class Game
 {
@@ -17,11 +24,14 @@ public:
            std::size_t target_frame_duration);
   int GetScore() const;
   int GetSize() const;
+  int GetHighestScore() const;
 
 private:
   Snake snake;
   SDL_Point food;
   Obstacle **obstacle;
+
+  int highestScore;
 
   std::random_device dev;
   std::mt19937 engine;
@@ -31,8 +41,12 @@ private:
   int score{0};
   int timePassed{0};
 
-  void PlaceFood();
-  void Update();
+  void PlaceFood(Obstacle **obs);
+  void Update(Obstacle **obs);
+  
+  // load and save the highest score
+  void saveHighestScore();
+  void loadHighestScore();
 };
 
 #endif

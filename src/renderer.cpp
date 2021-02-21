@@ -100,20 +100,7 @@ void Renderer::Render(Snake const snake, SDL_Point const &food, bool &pause, Obs
     block.y = point.y * block.h;
     SDL_RenderFillRect(sdl_renderer, &block);
   }
-
-  // Render snake's head
-  block.x = static_cast<int>(snake.head_x) * block.w;
-  block.y = static_cast<int>(snake.head_y) * block.h;
-  if (snake.alive)
-  {
-    SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x7A, 0xCC, 0xFF);
-  }
-  else
-  {
-    SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
-  }
-  SDL_RenderFillRect(sdl_renderer, &block);
-
+  
   // Render obstacles
   if (obs != nullptr)
   {
@@ -127,6 +114,21 @@ void Renderer::Render(Snake const snake, SDL_Point const &food, bool &pause, Obs
       SDL_RenderFillRect(sdl_renderer, &block);
     }
   }
+
+  // Render snake's head
+  block.w = screen_width / grid_width;
+  block.h = screen_height / grid_height;
+  block.x = static_cast<int>(snake.head_x) * block.w;
+  block.y = static_cast<int>(snake.head_y) * block.h;
+  if (snake.alive)
+  {
+    SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x7A, 0xCC, 0xFF);
+  }
+  else
+  {
+    SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
+  }
+  SDL_RenderFillRect(sdl_renderer, &block);
 
   // Update Screen
   SDL_RenderPresent(sdl_renderer);

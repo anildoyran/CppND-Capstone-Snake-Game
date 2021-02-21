@@ -15,13 +15,14 @@ Game::Game(std::size_t grid_width, std::size_t grid_height, int &selectedMap)
   else
   {
     this->obstacle = new Obstacle *[4];
-    this->obstacle[0] = new Obstacle(10, 0, 1, 10);
-    this->obstacle[1] = new Obstacle(static_cast<int>(grid_width) - 10, 10, 10, 1);
-    this->obstacle[2] = new Obstacle(0, static_cast<int>(grid_height) - 10, 10, 1);
-    this->obstacle[3] = new Obstacle(static_cast<int>(grid_width) - 10, static_cast<int>(grid_height) - 10, 1, 10);
+    this->obstacle[0] = new Obstacle(DEFAULT_OBSTACLE_OFFSET, 0, DEFAULT_OBSTACLE_THICKNESS, DEFAULT_OBSTACLE_LENGTH);
+    this->obstacle[1] = new Obstacle(static_cast<int>(grid_width) - DEFAULT_OBSTACLE_OFFSET, DEFAULT_OBSTACLE_OFFSET, DEFAULT_OBSTACLE_LENGTH, 1);
+    this->obstacle[2] = new Obstacle(0, static_cast<int>(grid_height) - DEFAULT_OBSTACLE_OFFSET, DEFAULT_OBSTACLE_LENGTH, DEFAULT_OBSTACLE_THICKNESS);
+    this->obstacle[3] = new Obstacle(static_cast<int>(grid_width) - DEFAULT_OBSTACLE_OFFSET, static_cast<int>(grid_height) - DEFAULT_OBSTACLE_OFFSET, DEFAULT_OBSTACLE_THICKNESS, DEFAULT_OBSTACLE_LENGTH);
   }
 
-  PlaceFood();
+  loadHighestScore();
+  PlaceFood(obstacle);
 }
 
 Game::~Game()
@@ -56,7 +57,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
       continue;
     }
 
-    Update();
+    Update(this->obstacle);
     renderer.Render(snake, food, gamePaused, obstacle);
 
     frame_end = SDL_GetTicks();
@@ -89,32 +90,55 @@ void Game::Run(Controller const &controller, Renderer &renderer,
       SDL_Delay(target_frame_duration - frame_duration);
     }
   }
+
+  if(score > highestScore)
+  {
+    saveHighestScore();
+    std::cout << "Congratulations! You beat the highest score (" << highestScore << ")!" << std::endl;
+    highestScore = score;
+  }
+
 }
 
-void Game::PlaceFood()
+void Game::PlaceFood(Obstacle **obs)
 {
+  bool place;
   int x, y;
   while (true)
   {
+    place = true;
     x = random_w(engine);
     y = random_h(engine);
-    // Check that the location is not occupied by a snake item before placing
-    // food.
+
+    // Check that the location is not occupied by a snake or by a obstacle item
+    // before placing the food
     if (!snake.SnakeCell(x, y))
     {
-      food.x = x;
-      food.y = y;
-      return;
+      for (int i = 0; i < obs[0]->obsCount; i++)
+      {
+        if (obs[i]->obstacleCell(x, y))
+        {
+          place = false;
+          break;
+        }
+      }
+      if (place == true)
+      {
+        food.x = x;
+        food.y = y;
+        return;
+      }
     }
+
   }
 }
 
-void Game::Update()
+void Game::Update(Obstacle **obs)
 {
   if (!snake.alive)
     return;
 
-  snake.Update();
+  snake.Update(obs);
 
   int new_x = static_cast<int>(snake.head_x);
   int new_y = static_cast<int>(snake.head_y);
@@ -123,7 +147,7 @@ void Game::Update()
   if (food.x == new_x && food.y == new_y)
   {
     score++;
-    PlaceFood();
+    PlaceFood(obs);
     // Grow snake and increase speed.
     snake.GrowBody();
     snake.speed += 0.02;
@@ -132,3 +156,31 @@ void Game::Update()
 
 int Game::GetScore() const { return score; }
 int Game::GetSize() const { return snake.size; }
+int Game::GetHighestScore() const { return highestScore; }
+
+void Game::saveHighestScore()
+{
+  std::ofstream file("../save/highestScore.txt");
+  file << score;
+  file.close();
+}
+
+void Game::loadHighestScore()
+{
+  std::ifstream file("../save/highestScore.txt");
+  
+  if (file.is_open())
+  {
+    file >> highestScore;
+    // check if the read score is valid
+    if (!(highestScore < 1000 && highestScore > 0))
+    {
+      highestScore = 0;
+    }    
+  }
+  else
+  {
+    highestScore = 0;
+  }  
+  file.close();
+}

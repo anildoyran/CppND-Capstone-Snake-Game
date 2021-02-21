@@ -4,6 +4,7 @@
 #include "game.h"
 #include "renderer.h"
 
+// Static function prototype
 static void getUserInput(int &map);
 
 int main()
@@ -16,7 +17,6 @@ int main()
   constexpr std::size_t kGridHeight{32};
 
   int selectedMap;
-
   getUserInput(selectedMap);
 
   Renderer renderer(kScreenWidth, kScreenHeight, kGridWidth, kGridHeight);
@@ -27,6 +27,7 @@ int main()
   std::cout << "Game has terminated successfully!\n";
   std::cout << "Score: " << game.GetScore() << "\n";
   std::cout << "Size: " << game.GetSize() << "\n";
+  std::cout << "Highest Score: " << game.GetHighestScore() << "\n";
   return 0;
 }
 
